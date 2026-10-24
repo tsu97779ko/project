@@ -1,47 +1,57 @@
-export default function Page() {
+import { headers } from 'next/headers'
+import { redirect } from 'next/navigation'
+import { BookOpen, Image as ImageIcon } from 'lucide-react'
+import { auth } from '@/lib/auth'
+import { latestNovels, popularManga } from '@/lib/sample-works'
+import { SiteHeader } from '@/components/site-header'
+import { SiteFooter } from '@/components/site-footer'
+import { WelcomeBanner } from '@/components/welcome-banner'
+import { SectionHeading } from '@/components/section-heading'
+import { NovelCard } from '@/components/novel-card'
+import { MangaCard } from '@/components/manga-card'
+import { RankingList } from '@/components/ranking-list'
+import { PostCallout } from '@/components/post-callout'
+
+export default async function HomePage() {
+  const session = await auth.api.getSession({ headers: await headers() })
+  if (!session?.user) redirect('/sign-in')
+
+  const userName = session.user.name || 'メンバー'
+
   return (
-    <main
-      style={{
-        colorScheme: 'light dark',
-        position: 'relative',
-        display: 'flex',
-        minHeight: '100vh',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'light-dark(#fff, #000)',
-        color: 'light-dark(#000, #fff)',
-      }}
-    >
-      <svg
-        aria-hidden="true"
-        style={{ width: 80, height: 80 }}
-        width={80}
-        height={80}
-        fill="none"
-        viewBox="0 0 20 20"
-        xmlns="http://www.w3.org/2000/svg"
-        stroke="currentColor"
-        strokeWidth="0.5"
-      >
-        <path
-          d="M14.2 14.2H17V6.9375C17 4.76288 15.2371 3 13.0625 3H5.8V5.8M14.2 14.2V7.79063L7.79062 14.2H14.2ZM14.2 14.2V17H6.9375C4.76288 17 3 15.2371 3 13.0625V5.8H5.8M5.8 5.8V12.2313L12.2313 5.8H5.8Z"
-          strokeLinejoin="round"
-        />
-      </svg>
-      <p
-        style={{
-          position: 'absolute',
-          left: '50%',
-          top: 'calc(50% + 56px)',
-          transform: 'translateX(-50%)',
-          whiteSpace: 'nowrap',
-          fontSize: '14px',
-          fontWeight: 500,
-          color: 'light-dark(#71717a, #a1a1aa)',
-        }}
-      >
-        Your v0 generation will show here.
-      </p>
-    </main>
+    <>
+      <SiteHeader userName={userName} />
+      <main className="mx-auto max-w-6xl px-4 pt-6">
+        <WelcomeBanner userName={userName} />
+
+        <div className="mt-10 flex flex-col gap-10 lg:flex-row">
+          <div className="flex min-w-0 flex-1 flex-col gap-12">
+            <section aria-labelledby="manga-heading" id="manga" className="scroll-mt-32">
+              <SectionHeading id="manga-heading" title="人気の漫画" icon={ImageIcon} moreHref="#" />
+              <div className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-4">
+                {popularManga.map((manga) => (
+                  <MangaCard key={manga.id} manga={manga} />
+                ))}
+              </div>
+            </section>
+
+            <section aria-labelledby="novels-heading" id="novels" className="scroll-mt-32">
+              <SectionHeading id="novels-heading" title="新着の小説" icon={BookOpen} moreHref="#" />
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {latestNovels.map((novel) => (
+                  <NovelCard key={novel.id} novel={novel} />
+                ))}
+              </div>
+            </section>
+          </div>
+
+          <aside className="flex w-full flex-col gap-6 lg:w-80 lg:shrink-0">
+            <RankingList />
+            <PostCallout />
+          </aside>
+        </div>
+      </main>
+      <SiteFooter />
+    </>
   )
 }
