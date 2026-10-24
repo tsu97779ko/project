@@ -45,9 +45,12 @@ export const auth = betterAuth({
         advanced: {
           // Required by the cross-site v0 preview iframe. Without these
           // attributes, login succeeds but the next request appears signed out.
+          // `partitioned` (CHIPS) lets browsers that block third-party cookies
+          // still keep the session inside the preview iframe.
           defaultCookieAttributes: {
             sameSite: 'none' as const,
             secure: true,
+            partitioned: true,
           },
         },
       }
